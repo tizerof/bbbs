@@ -27,7 +27,7 @@ class CustomEventAdmin(ModelAdmin):
         queryset = super().get_queryset(request)
         if not self.has_view_or_change_permission(request):
             queryset = queryset.none()
-        if not request.user.is_superuser:
+        if request.user.profiles.role == Profile.Roles.REGION_MODERATOR:
             queryset = queryset.filter(
                 city__in=request.user.profiles.city.all())
         return queryset
