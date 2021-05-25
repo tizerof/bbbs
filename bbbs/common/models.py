@@ -6,6 +6,20 @@ from django.dispatch import receiver
 
 User = get_user_model()
 
+ROLES = (
+    (1, 'administrator'),
+    (2, 'general_moderator'),
+    (3, 'regional_moderator'),
+    (4, 'mentor'),
+)
+
+
+class Roles(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, choices=ROLES)
+
+    def __str__(self):
+        return self.get_id_display()
+
 
 class City(models.Model):
     name = models.CharField(verbose_name='Название города', max_length=30)
@@ -33,9 +47,7 @@ class Profile(models.Model):
         verbose_name='Пользователь')
     city = models.ManyToManyField(
         City, null=True, blank=True, verbose_name='Город')
-    role = models.CharField(
-        max_length=100, choices=Roles.choices, default=Roles.MENTOR,
-        verbose_name='Роль')
+    roles = models.ManyToManyField('Roles')
 
     def __str__(self):
         return self.user.username
