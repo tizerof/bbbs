@@ -3,13 +3,15 @@ from rest_framework import serializers
 from bbbs.common.models import City, Profile
 
 
-class CitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = City
-        fields = serializers.ALL_FIELDS
+class CitySerializer(serializers.Serializer):
+    name = serializers.CharField()
+    is_primary = serializers.BooleanField()
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = serializers.ALL_FIELDS
+class ProfileSerializer(serializers.Serializer):
+    user = serializers.IntegerField()
+    city = serializers.IntegerField()
+    roles = serializers.ListField(child=serializers.IntegerField())
+
+    def update(self, user_id, validated_data):
+        return Profile.objects.filter(user__id=user_id).update(**validated_data)
