@@ -1,13 +1,28 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets, status
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from bbbs.common.models import City, Profile
+from bbbs.common.role_types import RoleTypes
 from bbbs.common.serializers import CitySerializer, ProfileSerializer
+from bbbs.utils.utils import has_roles
 
 
-class CityList(generics.ListAPIView):
-    queryset = City.objects.all().order_by('-is_primary')
-    serializer_class = CitySerializer
+class CityViewSet(viewsets.ViewSet):
+
+    @has_roles([RoleTypes.REGIONAL_MODERATOR.value, RoleTypes.MENTOR.value])
+    @staticmethod
+    def list(request: Request) -> Response:
+        queryset = City.objects.all()
+        serializer = CitySerializer(queryset, many=True)
+        return Response({'cities': serializer.data})
+
+    def change_user_city(self, request: Request, user_id: int) -> Response:
+        profile_id = Profile.objects.get(user__id=user_id).id
+        serializator = ProfileSerializer(profile_id, data=request.data, partial=True)
+        serializator.is_valid(raise_exception=True)
+        serializator.save()
+        return Response({'success': 'ok'}, status=status.HTTP_200_OK)
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
