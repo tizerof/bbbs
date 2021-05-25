@@ -13,14 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework_simplejwt import views as jwt_views
 
-from bbbs.afisha.views import EventList, EventParticipantList
-from bbbs.common.views import CityList, ProfileView
+from bbbs.afisha.views import EventViewSet, EventParticipantList
+from bbbs.common.views import CityViewSet, ProfileView
 from bbbs.main.views import MainView
 
 schema_view = get_schema_view(
@@ -51,9 +52,17 @@ urlpatterns = [
     path('api/v1/token/refresh/',
          jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('api/v1/cities/', CityList.as_view()),
-    path('api/v1/profile/', ProfileView.as_view()),
-    path('api/v1/main/', MainView.as_view()),
+    url(r'api/v1/cities/$', CityViewSet.as_view({'get': 'list'}, ), ),
+    url('api/v1/profile/(?P<user_id>[0-9]{1,10})$', CityViewSet.as_view({'put': 'change_user_city'}, name='profile')),
+    url(
+        r'api/v1/main/$',
+        EventViewSet.as_view({'get': 'get_events_by_user'}),
+        name='get_events'),
+
+    url(
+        r'api/v1/main/(?P<city_id>[0-9]{1,10})/$',
+        EventViewSet.as_view({'get': 'get_events_by_user'}),
+        name='get_events'),
     path('api/v1/afisha/events/', EventList.as_view()),
     path('api/v1/afisha/event-participants/', EventParticipantList.as_view()),
 ]
